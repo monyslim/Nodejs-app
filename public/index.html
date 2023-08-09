@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document Storage App</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: black; /* Set the background color to black */
+      margin: 0;
+      padding: 0;
+      color: #fff; /* Set text color to white */
+    }
+    h1 {
+      color: #00FFFF; /* Bright cyan color for headings */
+      margin-bottom: 20px;
+    }
+    #upload-form {
+      margin-top: 20px;
+    }
+    #document-list {
+      list-style: none;
+      padding: 0;
+    }
+    #document-list li {
+      margin-bottom: 5px;
+      color: #ddd; /* Light gray color for list items */
+    }
+    button {
+      background-color: #007BFF;
+      color: #fff;
+      border: none;
+      padding: 5px 10px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+    .download-link {
+      display: inline-block;
+      background-color: #5cb85c;
+      color: #fff;
+      padding: 2px 5px;
+      text-decoration: none;
+      border-radius: 4px;
+      margin-left: 10px;
+    }
+    .delete-button {
+      background-color: #d9534f;
+      margin-left: 10px;
+    }
+    .delete-button:hover {
+      background-color: #c9302c;
+    }
+  </style>
+</head>
+<body>
+  <h1>Document Storage App</h1>
+  
+  <!-- Image illustrating uploading -->
+  <img src="images/upload.png" alt="User uploading a document">
+  
+  <form id="upload-form">
+    <input type="file" id="file-input" accept=".txt,.pdf,.doc,.docx">
+    <button type="submit">Upload</button>
+  </form>
+  
+  <div id="uploaded-documents">
+    <h2>Uploaded Documents</h2>
+    <ul id="document-list"></ul>
+  </div>
+  
+  <!-- Image illustrating list of uploaded documents -->
+  <img src="images/list.png" alt="List of uploaded documents">
+  
+  <script>
+    const uploadForm = document.getElementById('upload-form');
+    const fileInput = document.getElementById('file-input');
+    const documentList = document.getElementById('document-list');
+
+    async function fetchUploadedDocuments() {
+      try {
+        const response = await fetch('/uploaded-documents');
+        if (!response.ok) {
+          throw new Error('Failed to fetch uploaded documents.');
+        }
+        const data = await response.json();
+        return data;
+      } catch (error) {
+        console.error('Error fetching uploaded documents:', error);
+        return [];
+      }
+    }
+
+    async function displayUploadedDocuments() {
+      const uploadedDocuments = await fetchUploadedDocuments();
+      documentList.innerHTML = ''; // Clear the list
+
+      uploadedDocuments.forEach(filename => {
+        const listItem = document.createElement('li');
+        listItem.textContent = filename;
+
+        const downloadLink = document.createElement('a');
+        downloadLink.className = 'download-link';
+        downloadLink.href = `/uploads/${filename}`;
+        downloadLink.textContent = 'Download';
+        downloadLink.download = filename;
+        listItem.appendChild(downloadLink);
+
+        const deleteButton = document.createElement('button');
+        deleteButton.className = 'delete-button';
+        deleteButton.textContent = 'Delete';
+        deleteButton.addEventListener('click', async () => {
+          try {
+            const response = await fetch(`/remove/${filename}`, {
+              method: 'GET',
+            });
+            if (!response.ok) {
+              throw new Error('Failed to delete file.');
+            }
+            await displayUploadedDocuments(); // Refresh the list after deletion
+          } catch (error) {
+            console.error('Error deleting file:', error);
+          }
+        });
+        listItem.appendChild(deleteButton);
+
+        documentList.appendChild(listItem);
+      });
+    }
+
+    // Load uploaded documents on page load
+    window.addEventListener('load', () => {
+      displayUploadedDocuments();
+    });
+
+    uploadForm.addEventListener('submit', async function (event) {
+      event.preventDefault();
+
+      const file = fileInput.files[0];
+      if (file) {
+        const formData = new FormData();
+        formData.append('file', file);
+
+        try {
+          const response = await fetch('/upload', {
+            method: 'POST',
+            body: formData,
+          });
+
+          if (response.ok) {
+            await displayUploadedDocuments(); // Refresh the list after upload
+          } else {
+            alert('File upload failed.');
+          }
+        } catch (error) {
+          console.error('Error uploading file:', error);
+        }
+      } else {
+        alert('Please select a file to upload.');
+      }
+    });
+  </script>
+</body>
+</html>

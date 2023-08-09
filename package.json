@@ -1,0 +1,27 @@
+{
+  "name": "nodejs-app",
+  "version": "1.0.0",
+  "description": "A simple app",
+  "main": "index.js",
+  "scripts": {
+    "bere": "nodemon server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/monyslim/Nodejs-app.git"
+  },
+  "author": "Abayomi-George David",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/monyslim/Nodejs-app/issues"
+  },
+  "homepage": "https://github.com/monyslim/Nodejs-app#readme",
+  "dependencies": {
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "multer": "^1.4.5-lts.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  }
+}
